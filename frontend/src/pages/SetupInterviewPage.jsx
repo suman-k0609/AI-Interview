@@ -132,9 +132,10 @@ export default function SetupInterviewPage() {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
 
-      if (res.data.success && res.data.interview?._id) {
+      const interviewId = res.data.interview?._id || res.data.interview?.id;
+      if (res.data.success && interviewId) {
         await refreshUser();
-        navigate(`/interview/${res.data.interview._id}`);
+        navigate(`/interview/${interviewId}`);
       } else {
         setError(res.data.message || 'Failed to start interview.');
       }

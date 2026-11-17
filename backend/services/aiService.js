@@ -23,7 +23,7 @@ const callLLM = async (systemPrompt, userPrompt) => {
 
   // 1. Try Google Gemini API with ultra-fast models
   if (geminiKey && geminiKey.trim() !== '') {
-    const candidateModels = ['gemini-3.5-flash', 'gemini-3.5-flash-lite', 'gemini-3.8-flash'];
+    const candidateModels = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-8b'];
     for (const modelName of candidateModels) {
       try {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${geminiKey}`;
@@ -42,7 +42,7 @@ const callLLM = async (systemPrompt, userPrompt) => {
               responseMimeType: 'application/json'
             }
           },
-          { headers: { 'Content-Type': 'application/json' }, timeout: 15000 }
+          { headers: { 'Content-Type': 'application/json' }, timeout: 8000 }
         );
 
         const candidate = response.data?.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -51,7 +51,11 @@ const callLLM = async (systemPrompt, userPrompt) => {
           return candidate;
         }
       } catch (err) {
-        console.warn(`[${modelName}] call error: ${err.message}, trying next available model...`);
+        console.warn(`[${modelName}] call error: ${err.message}`);
+        // If network is completely unreachable or API key is invalid (400/403), skip remaining models
+        if (err.code === 'ENOTFOUND' || err.code === 'ECONNREFUSED' || err.response?.status === 400 || err.response?.status === 403) {
+          break;
+        }
       }
     }
   }

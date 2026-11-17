@@ -16,9 +16,14 @@ export const connectDB = async () => {
   try {
     const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/ai-interview';
     
-    const conn = await mongoose.connect(mongoUri, {
-      serverSelectionTimeoutMS: 5000
+    const connectPromise = mongoose.connect(mongoUri, {
+      serverSelectionTimeoutMS: 3500,
+      connectTimeoutMS: 3500
     });
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Connection timed out after 4000ms')), 4000)
+    );
+    const conn = await Promise.race([connectPromise, timeoutPromise]);
     console.log(`✅ MongoDB Connected Successfully: ${conn.connection.host}`);
   } catch (error) {
     console.warn(`⚠️ MongoDB connection unavailable (${error.message}). Running with in-memory fallback store.`);
