@@ -2,21 +2,25 @@ import jwt from 'jsonwebtoken';
 import { User } from '../models/User.js';
 import { MemoryStore } from '../models/memoryStore.js';
 
-// Helper to reliably get a demo user
-const getFallbackUser = async () => {
-  if (MemoryStore.isMongoConnected()) {
-    let demoUser = await User.findOne({ email: 'demo@ai-interview.com' });
-    if (!demoUser) {
-      demoUser = await User.create({
-        name: 'Demo Candidate',
-        email: 'demo@ai-interview.com',
-        avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=Demo',
-        credits: 100
-      });
-    }
-    return demoUser;
+export const isUserAdmin = (req) => {
+  const adminSecret = process.env.ADMIN_SECRET || 'admin2026';
+  const secretHeader = req.headers['x-admin-secret'];
+  const secretBody = req.body?.adminSecret;
+  if (secretHeader && secretHeader === adminSecret) return true;
+  if (secretBody && secretBody === adminSecret) return true;
+  if (req.user?.isAdmin === true || req.user?.role === 'admin') return true;
+  if (process.env.ADMIN_EMAIL && req.user?.email && req.user.email.toLowerCase() === process.env.ADMIN_EMAIL.toLowerCase()) return true;
+  return false;
+};
+
+export const requireAdmin = (req, res, next) => {
+  if (isUserAdmin(req)) {
+    return next();
   }
-  return await MemoryStore.findUserByEmail('demo@ai-interview.com');
+  return res.status(403).json({
+    success: false,
+    message: 'Access denied: Administrator privileges required.'
+  });
 };
 
 export const protect = async (req, res, next) => {
@@ -28,8 +32,10 @@ export const protect = async (req, res, next) => {
     }
 
     if (!token || token === 'null' || token === 'undefined') {
-      req.user = await getFallbackUser();
-      return next();
+      return res.status(401).json({
+        success: false,
+        message: 'Authentication required. Please sign up or log in first to access this feature.'
+      });
     }
 
     try {
@@ -44,18 +50,25 @@ export const protect = async (req, res, next) => {
       }
 
       if (!user) {
-        req.user = await getFallbackUser();
-      } else {
-        req.user = user;
+        return res.status(401).json({
+          success: false,
+          message: 'User session not found. Please sign up or log in again.'
+        });
       }
+
+      req.user = user;
       next();
     } catch (jwtErr) {
-      req.user = await getFallbackUser();
-      next();
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid or expired session. Please log in again.'
+      });
     }
   } catch (error) {
     console.error('Auth protect error:', error.message);
-    req.user = await getFallbackUser();
-    next();
+    return res.status(500).json({
+      success: false,
+      message: 'Authentication processing error'
+    });
   }
 };

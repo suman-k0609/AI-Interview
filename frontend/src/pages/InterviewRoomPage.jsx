@@ -34,13 +34,14 @@ import {
   VolumeX,
   Copy,
   Check,
-  BookOpen
+  BookOpen,
+  Lock
 } from 'lucide-react';
 
 export default function InterviewRoomPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, openAuthModal } = useAuth();
 
   const [interview, setInterview] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -307,6 +308,28 @@ export default function InterviewRoomPage() {
     setAiStatus('speaking');
     setCurrentIndex((prev) => prev + 1);
   };
+
+  if (!user) {
+    return (
+      <div className="min-h-[70vh] flex flex-col items-center justify-center p-4 text-center">
+        <div className="glass-panel p-8 sm:p-10 rounded-3xl border border-indigo-500/30 max-w-md w-full shadow-2xl">
+          <div className="w-16 h-16 rounded-2xl bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-indigo-600/20">
+            <Lock className="w-8 h-8" />
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-2">Sign In Required</h2>
+          <p className="text-xs text-slate-300 mb-6 leading-relaxed">
+            You must be signed in to enter the live AI interview room and access proctoring and voice features.
+          </p>
+          <button
+            onClick={() => openAuthModal('signin')}
+            className="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 transition-all cursor-pointer"
+          >
+            Sign In / Sign Up to Enter Room
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

@@ -7,7 +7,7 @@ import {
   getTransactions, 
   handleAdminAction 
 } from '../controllers/paymentController.js';
-import { protect } from '../middleware/auth.js';
+import { protect, requireAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -20,7 +20,7 @@ router.post('/submit-utr', protect, submitUpiUtr);
 router.post('/verify', protect, verifyPayment);
 router.get('/transactions', protect, getTransactions);
 
-// Admin verification & approval endpoint
-router.post('/admin/action', protect, handleAdminAction);
+// Admin verification & approval endpoint (requires Admin privileges)
+router.post('/admin/action', protect, requireAdmin, handleAdminAction);
 
 export default router;

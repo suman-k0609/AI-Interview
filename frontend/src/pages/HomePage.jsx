@@ -50,18 +50,29 @@ export default function HomePage() {
 
         {/* CTA Buttons */}
         <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-          <Link
-            to="/setup"
-            className="flex items-center gap-2.5 px-8 py-4 rounded-2xl btn-aurora text-white font-bold text-sm tracking-wide shadow-2xl cursor-pointer"
-          >
-            <Play className="w-4 h-4 fill-white" />
-            <span>Launch Mock Interview</span>
-            <ArrowRight className="w-4 h-4" />
-          </Link>
+          {user ? (
+            <Link
+              to="/setup"
+              className="flex items-center gap-2.5 px-8 py-4 rounded-2xl btn-aurora text-white font-bold text-sm tracking-wide shadow-2xl cursor-pointer"
+            >
+              <Play className="w-4 h-4 fill-white" />
+              <span>Launch Mock Interview</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          ) : (
+            <button
+              onClick={() => openAuthModal('signup')}
+              className="flex items-center gap-2.5 px-8 py-4 rounded-2xl btn-aurora text-white font-bold text-sm tracking-wide shadow-2xl cursor-pointer"
+            >
+              <Play className="w-4 h-4 fill-white" />
+              <span>Sign Up to Start Mock Interview</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          )}
 
           {!user && (
             <button
-              onClick={openAuthModal}
+              onClick={() => openAuthModal('signin')}
               className="flex items-center gap-2 px-6 py-4 rounded-2xl glass-card hover:bg-slate-800/80 text-slate-200 font-bold text-sm border border-slate-700 hover:border-indigo-500/50 transition-all cursor-pointer shadow-lg"
             >
               <Sparkles className="w-4 h-4 text-indigo-400" />

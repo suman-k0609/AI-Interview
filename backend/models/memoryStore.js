@@ -36,7 +36,7 @@ export const MemoryStore = {
     return memoryUsers.get(id.toString()) || null;
   },
 
-  async createUser({ name, email, password = '', avatar, credits = 50 }) {
+  async createUser({ name, email, password = '', avatar, credits = 50, role = 'user', isAdmin = false }) {
     const user = {
       _id: 'user_' + Date.now(),
       name,
@@ -44,6 +44,8 @@ export const MemoryStore = {
       password,
       avatar,
       credits,
+      role,
+      isAdmin,
       totalInterviewsTaken: 0,
       createdAt: new Date(),
       save: async function () {

@@ -52,20 +52,41 @@ export default function Navbar({ onOpenAdmin }) {
           >
             Home
           </Link>
-          <Link
-            to="/setup"
-            className="px-3 py-1.5 rounded-lg hover:text-white hover:bg-slate-800/50 transition-colors flex items-center gap-1.5"
-          >
-            <PlayCircle className="w-4 h-4 text-indigo-400" />
-            Mock Interview
-          </Link>
-          <Link
-            to="/history"
-            className="px-3 py-1.5 rounded-lg hover:text-white hover:bg-slate-800/50 transition-colors flex items-center gap-1.5"
-          >
-            <History className="w-4 h-4 text-slate-400" />
-            Past Reports
-          </Link>
+          {user ? (
+            <>
+              <Link
+                to="/setup"
+                className="px-3 py-1.5 rounded-lg hover:text-white hover:bg-slate-800/50 transition-colors flex items-center gap-1.5"
+              >
+                <PlayCircle className="w-4 h-4 text-indigo-400" />
+                Mock Interview
+              </Link>
+              <Link
+                to="/history"
+                className="px-3 py-1.5 rounded-lg hover:text-white hover:bg-slate-800/50 transition-colors flex items-center gap-1.5"
+              >
+                <History className="w-4 h-4 text-slate-400" />
+                Past Reports
+              </Link>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={() => openAuthModal('signup')}
+                className="px-3 py-1.5 rounded-lg hover:text-white hover:bg-slate-800/50 transition-colors flex items-center gap-1.5 cursor-pointer"
+              >
+                <PlayCircle className="w-4 h-4 text-indigo-400" />
+                Mock Interview
+              </button>
+              <button
+                onClick={() => openAuthModal('signin')}
+                className="px-3 py-1.5 rounded-lg hover:text-white hover:bg-slate-800/50 transition-colors flex items-center gap-1.5 cursor-pointer"
+              >
+                <History className="w-4 h-4 text-slate-400" />
+                Past Reports
+              </button>
+            </>
+          )}
           <button
             onClick={openPricing}
             className="px-3 py-1.5 rounded-lg hover:text-white hover:bg-slate-800/50 transition-colors flex items-center gap-1.5 cursor-pointer"
@@ -74,8 +95,8 @@ export default function Navbar({ onOpenAdmin }) {
             Pricing
           </button>
 
-          {/* Admin Verification Portal Button */}
-          {onOpenAdmin && (
+          {/* Admin Verification Portal Button (Only visible to authenticated administrators) */}
+          {onOpenAdmin && user && (user.isAdmin || user.role === 'admin') && (
             <button
               onClick={onOpenAdmin}
               className="px-3 py-1.5 rounded-lg hover:text-white bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 transition-colors flex items-center gap-1.5 border border-indigo-500/30 cursor-pointer ml-1"

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import { 
   ShieldCheck, 
   X, 
@@ -12,34 +13,87 @@ import {
   User, 
   CreditCard,
   AlertTriangle,
-  Sparkles
+  Sparkles,
+  Lock,
+  Key
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 export default function AdminVerificationModal({ isOpen, onClose }) {
+  const { user } = useAuth();
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(null);
   const [message, setMessage] = useState(null);
   const [copiedUtr, setCopiedUtr] = useState(null);
+  const [adminPasscode, setAdminPasscode] = useState(() => sessionStorage.getItem('ai_admin_passcode') || '');
+  const [passcodeInput, setPasscodeInput] = useState('');
+  const [passcodeError, setPasscodeError] = useState('');
+
+  const isAlreadyAdmin = Boolean(user?.isAdmin || user?.role === 'admin');
+  const isUnlocked = isAlreadyAdmin || Boolean(adminPasscode);
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && isUnlocked) {
       fetchTransactions();
     }
-  }, [isOpen]);
+  }, [isOpen, isUnlocked]);
 
-  const fetchTransactions = async () => {
+  const getHeaders = () => {
+    const headers = {};
+    if (adminPasscode) {
+      headers['x-admin-secret'] = adminPasscode;
+    }
+    return headers;
+  };
+
+  const fetchTransactions = async (passcodeToUse = adminPasscode) => {
     setLoading(true);
     setMessage(null);
     try {
-      const res = await api.get('/payment/transactions?admin=true');
+      const headers = {};
+      if (passcodeToUse) {
+        headers['x-admin-secret'] = passcodeToUse;
+      }
+      const res = await api.get('/payment/transactions?admin=true', { headers });
       if (res.data.success) {
         setTransactions(res.data.transactions || []);
       }
     } catch (err) {
       console.error('Failed to fetch transactions:', err);
-      setMessage({ type: 'error', text: 'Failed to load transaction queue' });
+      if (err.response?.status === 403) {
+        setAdminPasscode('');
+        sessionStorage.removeItem('ai_admin_passcode');
+        setMessage({ type: 'error', text: 'Access denied: Invalid administrator key.' });
+      } else {
+        setMessage({ type: 'error', text: 'Failed to load transaction queue' });
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUnlock = async (e) => {
+    e.preventDefault();
+    setPasscodeError('');
+    if (!passcodeInput.trim()) {
+      setPasscodeError('Please enter the admin security key');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await api.get('/payment/transactions?admin=true', {
+        headers: { 'x-admin-secret': passcodeInput.trim() }
+      });
+      if (res.data.success) {
+        setAdminPasscode(passcodeInput.trim());
+        sessionStorage.setItem('ai_admin_passcode', passcodeInput.trim());
+        setTransactions(res.data.transactions || []);
+        setPasscodeInput('');
+      }
+    } catch (err) {
+      setPasscodeError(err.response?.data?.message || 'Invalid administrator key. Access denied.');
     } finally {
       setLoading(false);
     }
@@ -55,11 +109,16 @@ export default function AdminVerificationModal({ isOpen, onClose }) {
     setActionLoading(transactionId + action);
     setMessage(null);
     try {
-      const res = await api.post('/payment/admin/action', {
-        transactionId,
-        action,
-        reason: action === 'REJECT' ? 'UTR could not be matched with bank record' : ''
-      });
+      const res = await api.post(
+        '/payment/admin/action',
+        {
+          transactionId,
+          action,
+          adminSecret: adminPasscode,
+          reason: action === 'REJECT' ? 'UTR could not be matched with bank record' : ''
+        },
+        { headers: getHeaders() }
+      );
 
       if (res.data.success) {
         setMessage({
@@ -153,6 +212,57 @@ export default function AdminVerificationModal({ isOpen, onClose }) {
           </div>
         )}
 
+        {!isUnlocked ? (
+          <div className="p-8 sm:p-12 flex flex-col items-center justify-center text-center max-w-md mx-auto flex-1">
+            <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center mb-4 shadow-lg shadow-indigo-500/20">
+              <Lock className="w-8 h-8" />
+            </div>
+            <h3 className="text-xl font-extrabold text-slate-900 dark:text-white mb-1">
+              Restricted Admin Access
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mb-6 leading-relaxed">
+              This portal is restricted to authorized administrators only. Enter your Admin Security Key to manage UTR verifications.
+            </p>
+
+            <form onSubmit={handleUnlock} className="w-full space-y-4">
+              <div>
+                <input
+                  type="password"
+                  value={passcodeInput}
+                  onChange={(e) => {
+                    setPasscodeInput(e.target.value);
+                    if (passcodeError) setPasscodeError('');
+                  }}
+                  placeholder="Enter Admin Security Key"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center font-mono tracking-widest shadow-inner"
+                  autoFocus
+                />
+                {passcodeError && (
+                  <p className="text-xs text-red-500 mt-2 font-medium flex items-center justify-center gap-1">
+                    <AlertTriangle className="w-3.5 h-3.5" />
+                    <span>{passcodeError}</span>
+                  </p>
+                )}
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                {loading ? (
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                ) : (
+                  <>
+                    <Key className="w-4 h-4" />
+                    <span>Unlock Admin Portal</span>
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
+        ) : (
+          <>
         {/* Description Banner */}
         <div className="bg-slate-50 dark:bg-slate-950/60 px-6 py-3 border-b border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -285,6 +395,8 @@ export default function AdminVerificationModal({ isOpen, onClose }) {
             })
           )}
         </div>
+          </>
+        )}
 
         {/* Footer */}
         <div className="p-4 bg-slate-50 dark:bg-slate-950/80 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400 flex items-center justify-between">

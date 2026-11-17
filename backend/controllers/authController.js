@@ -8,6 +8,22 @@ const generateToken = (userId) => {
   return jwt.sign({ id: userId }, secret, { expiresIn: '30d' });
 };
 
+const formatUser = (user) => {
+  const adminEmail = process.env.ADMIN_EMAIL ? process.env.ADMIN_EMAIL.toLowerCase().trim() : '';
+  const isEmailAdmin = Boolean(adminEmail && user.email && user.email.toLowerCase() === adminEmail);
+  const isAdmin = Boolean(user.isAdmin || user.role === 'admin' || isEmailAdmin);
+  return {
+    id: user._id,
+    name: user.name,
+    email: user.email,
+    avatar: user.avatar,
+    credits: user.credits,
+    role: isAdmin ? 'admin' : (user.role || 'user'),
+    isAdmin,
+    totalInterviewsTaken: user.totalInterviewsTaken || 0
+  };
+};
+
 /**
  * Register a new user with Name, Email, Password, and Avatar
  */
@@ -75,14 +91,7 @@ export const register = async (req, res) => {
       success: true,
       message: 'Account created successfully! Welcome to AceMock AI.',
       token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        avatar: user.avatar,
-        credits: user.credits,
-        totalInterviewsTaken: user.totalInterviewsTaken || 0
-      }
+      user: formatUser(user)
     });
   } catch (error) {
     console.error('Registration Error:', error.message);
@@ -141,14 +150,7 @@ export const login = async (req, res) => {
       success: true,
       message: 'Signed in successfully!',
       token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        avatar: user.avatar,
-        credits: user.credits,
-        totalInterviewsTaken: user.totalInterviewsTaken || 0
-      }
+      user: formatUser(user)
     });
   } catch (error) {
     console.error('Login Error:', error.message);
@@ -197,14 +199,7 @@ export const googleAuth = async (req, res) => {
     res.status(200).json({
       success: true,
       token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        avatar: user.avatar,
-        credits: user.credits,
-        totalInterviewsTaken: user.totalInterviewsTaken
-      }
+      user: formatUser(user)
     });
   } catch (error) {
     console.error('Google Auth Error:', error.message);
@@ -221,14 +216,7 @@ export const getCurrentUser = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        avatar: user.avatar,
-        credits: user.credits,
-        totalInterviewsTaken: user.totalInterviewsTaken
-      }
+      user: formatUser(user)
     });
   } catch (error) {
     console.error('Get Current User Error:', error.message);

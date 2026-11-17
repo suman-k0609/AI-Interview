@@ -192,17 +192,35 @@ async function runTestSuite() {
     transactionId = data.transaction?.id || data.transaction?._id;
   }
 
-  // Test 2.4: Admin Approves Payment & Adds Credits
+  // Test 2.4: Non-Admin attempts approval (MUST be blocked with 403)
   {
+    const foundUser = await MemoryStore.findUserById(testUser.id);
     const { req, res } = createMockReqRes({
       body: {
         transactionId: transactionId,
         action: 'APPROVE'
+      },
+      user: foundUser // standard user, not admin
+    });
+    await paymentController.handleAdminAction(req, res);
+    assert(res.getStatusCode() === 403, 'Unauthorized user cannot approve payment (403 Forbidden)');
+  }
+
+  // Test 2.5: Admin Approves Payment with Admin Key & Adds Credits
+  {
+    const { req, res } = createMockReqRes({
+      body: {
+        transactionId: transactionId,
+        action: 'APPROVE',
+        adminSecret: 'admin2026'
+      },
+      headers: {
+        'x-admin-secret': 'admin2026'
       }
     });
     await paymentController.handleAdminAction(req, res);
     const data = res.getData();
-    assert(res.getStatusCode() === 200 && data.success === true, 'Admin approves transaction');
+    assert(res.getStatusCode() === 200 && data.success === true, 'Admin with key approves transaction');
     const updatedUser = await MemoryStore.findUserById(testUser.id);
     assert(updatedUser.credits === 100, `User credits credited correctly (50 initial + 50 plan = ${updatedUser.credits})`);
   }

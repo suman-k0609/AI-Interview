@@ -260,25 +260,12 @@ export default function RazorpayModal({
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-              {onOpenAdmin && (
-                <button
-                  onClick={() => {
-                    onClose();
-                    onOpenAdmin();
-                  }}
-                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-md shadow-indigo-600/30 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
-                >
-                  <ShieldCheck className="w-4 h-4" />
-                  <span>Open Merchant Admin Portal (Approve Now)</span>
-                </button>
-              )}
-
+            <div className="flex items-center justify-center pt-2">
               <button
                 onClick={onClose}
-                className="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs transition-colors cursor-pointer"
+                className="w-full sm:w-auto px-8 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs shadow-md shadow-indigo-600/30 transition-all cursor-pointer"
               >
-                Done
+                Close & Return to Dashboard
               </button>
             </div>
           </div>

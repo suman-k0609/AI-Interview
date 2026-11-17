@@ -26,6 +26,15 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: ''
     },
+    role: {
+      type: String,
+      enum: ['user', 'admin'],
+      default: 'user'
+    },
+    isAdmin: {
+      type: Boolean,
+      default: false
+    },
     // New users start with 50 credits (each interview costs 10 credits = 5 free sessions)
     credits: {
       type: Number,

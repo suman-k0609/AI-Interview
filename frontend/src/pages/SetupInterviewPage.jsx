@@ -15,7 +15,8 @@ import {
   Layers,
   GraduationCap,
   UserCheck,
-  Volume2
+  Volume2,
+  Lock
 } from 'lucide-react';
 import { AI_PERSONAS } from '../components/AIHumanInterviewer';
 
@@ -147,6 +148,62 @@ export default function SetupInterviewPage() {
       setLoadingStep('');
     }
   };
+
+  if (!user) {
+    return (
+      <div className="max-w-xl mx-auto px-4 py-16 text-center animate-in fade-in duration-300">
+        <div className="glass-panel p-8 sm:p-10 rounded-3xl border border-indigo-500/30 shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-600/15 rounded-full blur-3xl pointer-events-none -z-10" />
+
+          <div className="w-16 h-16 rounded-2xl bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center mx-auto mb-6 shadow-lg shadow-indigo-600/20">
+            <Lock className="w-8 h-8" />
+          </div>
+
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold mb-3">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Sign Up Required</span>
+          </div>
+
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-white mb-3">
+            Sign Up to Start Your AI Mock Interview
+          </h1>
+
+          <p className="text-sm text-slate-300 mb-8 leading-relaxed">
+            Create an account or sign in to configure your personalized AI interview, upload your resume, and claim your <strong>50 free credits</strong>.
+          </p>
+
+          <div className="grid grid-cols-2 gap-3 text-left mb-8">
+            <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800 text-xs">
+              <span className="font-bold text-indigo-400 block mb-0.5">🎁 50 Free Credits</span>
+              <span className="text-slate-400">Granted immediately on sign up (5 mock interviews)</span>
+            </div>
+            <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800 text-xs">
+              <span className="font-bold text-emerald-400 block mb-0.5">📄 Resume Parser</span>
+              <span className="text-slate-400">Tailored questions based on your specific tech stack</span>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <button
+              onClick={() => openAuthModal('signup')}
+              className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-extrabold text-sm shadow-xl shadow-indigo-600/30 flex items-center justify-center gap-2 transition-all cursor-pointer hover:scale-[1.01] active:scale-[0.99]"
+            >
+              <UserCheck className="w-4 h-4" />
+              <span>Sign Up to Begin (Claim 50 Credits)</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+
+            <button
+              onClick={() => openAuthModal('signin')}
+              className="w-full py-3 px-6 rounded-2xl border border-slate-700 hover:bg-slate-800/80 text-slate-300 hover:text-white font-bold text-xs transition-colors cursor-pointer"
+            >
+              Already have an account? Sign In
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10">

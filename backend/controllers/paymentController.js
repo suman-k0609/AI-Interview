@@ -4,6 +4,7 @@ import mongoose from 'mongoose';
 import { User } from '../models/User.js';
 import { Transaction } from '../models/Transaction.js';
 import { MemoryStore } from '../models/memoryStore.js';
+import { isUserAdmin } from '../middleware/auth.js';
 
 // Initialize Razorpay client (optional gateway)
 const getRazorpayInstance = () => {
@@ -299,19 +300,27 @@ export const verifyPayment = async (req, res) => {
  */
 export const getTransactions = async (req, res) => {
   try {
-    const isAdmin = req.query.admin === 'true' || req.user?.isAdmin;
+    const isAdmin = isUserAdmin(req);
+    const wantsAdminView = req.query.admin === 'true';
+
+    if (wantsAdminView && !isAdmin) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied: Administrator privileges required to view all transactions.'
+      });
+    }
 
     const limit = parseInt(req.query.limit) || 500;
 
     let transactions = [];
     if (MemoryStore.isMongoConnected()) {
-      if (isAdmin) {
+      if (isAdmin && wantsAdminView) {
         transactions = await Transaction.find().sort({ createdAt: -1 }).limit(limit);
       } else {
         transactions = await Transaction.find({ userId: req.user._id }).sort({ createdAt: -1 });
       }
     } else {
-      if (isAdmin) {
+      if (isAdmin && wantsAdminView) {
         transactions = await MemoryStore.getAllTransactions();
       } else {
         transactions = await MemoryStore.getUserTransactions(req.user?._id);
@@ -334,6 +343,13 @@ export const getTransactions = async (req, res) => {
  */
 export const handleAdminAction = async (req, res) => {
   try {
+    if (!isUserAdmin(req)) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied: Only authorized administrators can approve or reject payments.'
+      });
+    }
+
     const { transactionId, action, reason } = req.body;
 
     if (!['APPROVE', 'REJECT'].includes(action)) {
