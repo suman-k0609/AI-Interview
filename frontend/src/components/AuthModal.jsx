@@ -258,9 +258,32 @@ export default function AuthModal() {
 
         {/* Error Notification */}
         {error && (
-          <div className="mb-4 p-3 rounded-xl bg-red-950/70 border border-red-500/50 text-red-200 text-xs flex items-start gap-2.5 animate-in fade-in">
-            <AlertCircle className="w-4 h-4 shrink-0 text-red-400 mt-0.5" />
-            <span className="leading-snug">{error}</span>
+          <div className="mb-4 p-3 rounded-xl bg-red-950/70 border border-red-500/50 text-red-200 text-xs flex items-start justify-between gap-2.5 animate-in fade-in">
+            <div className="flex items-start gap-2.5">
+              <AlertCircle className="w-4 h-4 shrink-0 text-red-400 mt-0.5" />
+              <div className="leading-snug">
+                <span>{error}</span>
+                {error.toLowerCase().includes('sign up') && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMode('signup');
+                      setError('');
+                    }}
+                    className="block mt-1 font-bold text-indigo-400 hover:text-indigo-300 underline cursor-pointer"
+                  >
+                    Click here to Sign Up for Free with this email →
+                  </button>
+                )}
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setError('')}
+              className="text-red-400 hover:text-white p-0.5"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
           </div>
         )}
 

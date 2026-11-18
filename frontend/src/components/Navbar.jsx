@@ -189,7 +189,7 @@ export default function Navbar({ onOpenAdmin }) {
                       Buy Credits (UPI / QR)
                     </button>
 
-                    {onOpenAdmin && (
+                    {onOpenAdmin && user && (user.isAdmin || user.role === 'admin') && (
                       <button
                         onClick={onOpenAdmin}
                         className="w-full text-left flex items-center gap-2.5 px-4 py-2 text-xs text-indigo-300 hover:bg-indigo-600/10 hover:text-indigo-400 cursor-pointer"
@@ -214,17 +214,6 @@ export default function Navbar({ onOpenAdmin }) {
             </div>
           ) : (
             <div className="flex items-center gap-2">
-              {onOpenAdmin && (
-                <button
-                  onClick={onOpenAdmin}
-                  className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-indigo-700/50 bg-indigo-950/40 hover:bg-indigo-900/60 text-xs font-semibold text-indigo-300 transition-all cursor-pointer"
-                  title="Merchant UTR Verification Queue"
-                >
-                  <ShieldCheck className="w-3.5 h-3.5 text-indigo-400" />
-                  <span>Admin</span>
-                </button>
-              )}
-
               <button
                 onClick={loginDemo}
                 className="hidden lg:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs font-semibold text-slate-200 transition-all cursor-pointer"
