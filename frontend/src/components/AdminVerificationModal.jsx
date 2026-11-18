@@ -268,7 +268,7 @@ export default function AdminVerificationModal({ isOpen, onClose }) {
           <div className="flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
             <span>
-              Candidate ne jo 12-digit UTR enter kiya hai, use apne <strong>PhonePe / SBI statement</strong> se match karein aur <strong>"Approve"</strong> par click karein.
+              Verify the 12-digit UTR submitted by the candidate against your <strong>bank / UPI statement</strong> and click <strong>"Approve"</strong> to credit their account.
             </span>
           </div>
         </div>

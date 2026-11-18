@@ -100,11 +100,11 @@ export default function RazorpayModal({
     const cleanUtr = utrNumber.trim();
 
     if (!cleanUtr) {
-      setUtrError('Kripya PhonePe / Google Pay se 12-digit UTR number enter karein!');
+      setUtrError('Please enter the 12-digit UTR from your PhonePe, Google Pay, or Paytm receipt.');
       return;
     }
     if (!/^\d{12}$/.test(cleanUtr)) {
-      setUtrError('Invalid UTR! Bank UTR theek 12 numeric digits ka hona chahiye (jaise: 429184029182).');
+      setUtrError('Invalid UTR! Bank UTR / Reference ID must be exactly 12 numeric digits (e.g., 429184029182).');
       return;
     }
 
@@ -241,7 +241,7 @@ export default function RazorpayModal({
                 12-Digit UTR Submitted Successfully!
               </h3>
               <p className="text-xs text-slate-600 dark:text-slate-300 max-w-md mx-auto leading-relaxed">
-                Aapka UTR <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800">{submittedStatus.utr}</span> register ho gaya hai. Free fake credits rokne ke liye Suman ke bank record se match hone par aapke account me <strong>+{plan.credits} Credits</strong> add ho jayenge.
+                Your UTR <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800">{submittedStatus.utr}</span> has been submitted for review. Once verified against bank records, <strong>+{plan.credits} Credits</strong> will be added to your account.
               </p>
             </div>
 
@@ -357,7 +357,7 @@ export default function RazorpayModal({
                         </div>
 
                         <p className="text-slate-600 dark:text-slate-300 text-xs leading-relaxed">
-                          Scan with <strong>Google Pay</strong>, <strong>PhonePe</strong>, or <strong>Paytm</strong>. Payment direct <strong>{merchantName}</strong> ke account me transfer hoga.
+                          Scan using <strong>Google Pay</strong>, <strong>PhonePe</strong>, or <strong>Paytm</strong>. Payment is transferred directly to <strong>{merchantName}</strong>.
                         </p>
 
                         <div className="pt-1">
@@ -405,7 +405,7 @@ export default function RazorpayModal({
                       </div>
 
                       <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed">
-                        Payment hone ke baad PhonePe / GPay par <strong>Payment Details</strong> me diya 12-digit UTR enter karein. Anti-fraud system duplicate ya fake UTR ko block karta hai:
+                        After completing the payment, enter the 12-digit UTR found under <strong>Payment Details</strong> in PhonePe / Google Pay. The anti-fraud engine verifies against duplicate submissions:
                       </p>
 
                       {utrError && (
