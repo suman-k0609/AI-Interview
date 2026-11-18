@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import mongoose from 'mongoose';
 import { connectDB } from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
 import interviewRoutes from './routes/interviewRoutes.js';
@@ -33,9 +34,12 @@ connectDB();
 
 // System Health Check (exempt from rate limit for monitoring)
 app.get('/api/health', (req, res) => {
+  const isMongoConnected = mongoose.connection.readyState === 1;
   res.status(200).json({
     status: 'online',
     service: 'AI Interview Agent Backend',
+    database: isMongoConnected ? 'MongoDB Atlas (Connected)' : 'In-Memory Fallback Store (Active)',
+    mongoHost: isMongoConnected ? mongoose.connection.host : null,
     timestamp: new Date().toISOString()
   });
 });
